@@ -69,6 +69,11 @@
 #include "mirv_voice.h"
 #endif //#ifndef _WIN64
 
+// mirv_pgl x64 enable: the include above is gated to !_WIN64, but the x64 build
+// now compiles MirvPgl.cpp and pumps it from the TF2 frame hook below, so it needs
+// the declarations too. Header-guarded, so harmless on 32-bit.
+#include "MirvPgl.h"
+
 #include "Gui.h"
 #include <csgo/sdk_src/public/tier0/memalloc.h>
 #include <csgo/sdk_src/public/tier1/convar.h>
@@ -915,6 +920,17 @@ void __fastcall new_CVClient_FrameStageNotify_TF2(void* This,
 	switch (curStage)
 	{
 	case SOURCESDK::TF2::FRAME_RENDER_START:
+#if defined(AFX_MIRV_PGL) && defined(_WIN64)
+		// mirv_pgl x64 enable: on 32-bit the pump lives in CAfxBaseClientDll::
+		// FrameStageNotify, which is compiled out on x64 (#ifndef _WIN64). Drive
+		// the WebSocket message queue (exec/setCam) from this x64-active TF2 hook.
+		{
+			static bool s_mirvPglInitX64 = false;
+			if (!s_mirvPglInitX64) { MirvPgl::Init(); s_mirvPglInitX64 = true; }
+			MirvPgl::CheckStartedAndRestoreIfDown();
+			MirvPgl::ExecuteQueuedCommands();
+		}
+#endif
 		Shared_BeforeFrameRenderStart();
 		break;
 	}

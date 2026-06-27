@@ -438,9 +438,9 @@ void Hook_VClient_RenderView::OnViewOverride(float &Tx, float &Ty, float &Tz, fl
 			break;
 
 		case Override_MirvPgl:
-#ifndef _WIN64
+#ifdef AFX_MIRV_PGL // mirv_pgl x64 enable: was #ifndef _WIN64; apply setCam on x64 too
 			if (MirvPgl::OnViewOverride(Tx, Ty, Tz, Rx, Ry, Rz, Fov)) originOrAnglesOverriden = true;
-#endif //#ifndef _WIN64
+#endif
 			break;
 
 		case Override_Interop:

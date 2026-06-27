@@ -517,3 +517,18 @@ if(CMAKE_GENERATOR_PLATFORM STREQUAL "Win32")
     source_group("AfxHookSource/garrysmod" REGULAR_EXPRESSION "/AfxHookSource/garrysmod/")
     source_group("AfxHookSource/momentum" REGULAR_EXPRESSION "/AfxHookSource/momentum/")
 endif()
+
+# --- mirv_pgl x64 enable (camera/exec control; gameEvent stream stays inert) ---
+# MirvPgl.cpp + csgo_GameEvents.cpp are otherwise Win32-only above. Compile them
+# for x64 too so the `mirv_pgl` console command registers and the WebSocket
+# camera/exec back-channel works on 64-bit TF2. The CS:GO-only gameEvent *hook*
+# (addresses.cpp, #ifndef _WIN64 + CSGO-gated) still never installs, so the event
+# serializer is linked but dormant — exactly what we want.
+if(CMAKE_GENERATOR_PLATFORM STREQUAL "x64")
+    target_sources(AfxHookSource PRIVATE
+        MirvPgl.cpp
+        MirvPgl.h
+        csgo_GameEvents.cpp
+        csgo_GameEvents.h
+    )
+endif()
