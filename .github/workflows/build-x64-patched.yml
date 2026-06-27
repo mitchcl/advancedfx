@@ -23,14 +23,11 @@ jobs:
       - name: Install gettext
         run: scoop install gettext
 
-      - name: Ensure Rust x64 msvc target
-        run: rustup target add x86_64-pc-windows-msvc
+      - name: Ensure Rust targets
+        run: rustup target add i686-pc-windows-msvc x86_64-pc-windows-msvc
 
-      - name: Configure (x64-release)
-        run: cmake --preset x64-release
-
-      - name: Build AfxHookSource (x64-release)
-        run: cmake --build --preset x64-release --target AfxHookSource
+      - name: Build (MultiBuild staging, x64 = Source 1 family)
+        run: cmake -DAFX_MULTIBUILD_STAGING=ON -DAFX_MULTIBUILD_STAGING_X64=source1 -P cmake/MultiBuild.cmake
 
       - name: Locate build outputs
         if: always()
@@ -38,12 +35,12 @@ jobs:
         run: |
           Write-Host "=== AfxHookSource.dll matches ==="
           Get-ChildItem -Recurse -Filter AfxHookSource.dll -ErrorAction SilentlyContinue build | Select-Object FullName, Length
-          Write-Host "=== all dlls under build ==="
-          Get-ChildItem -Recurse -Filter *.dll -ErrorAction SilentlyContinue build | Select-Object FullName
+          Write-Host "=== staging-release tree ==="
+          if (Test-Path build/staging-release) { Get-ChildItem -Recurse build/staging-release | Select-Object FullName }
 
       - name: Upload AfxHookSource.dll
         uses: actions/upload-artifact@v4
         with:
           name: AfxHookSource-x64
-          path: build/x64-release/**/AfxHookSource.dll
+          path: build/staging-release/**/AfxHookSource.dll
           if-no-files-found: error

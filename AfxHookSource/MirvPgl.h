@@ -200,12 +200,16 @@ namespace MirvPgl
 	void DataStop();
 
 	bool IsDataActive();
+#ifndef _WIN64 // mirv_pgl x64: drawing feature disabled
 	bool IsDrawingActive();
+#endif
 
 	void CheckStartedAndRestoreIfDown();
 	void ExecuteQueuedCommands();
+#ifndef _WIN64 // mirv_pgl x64: drawing feature disabled
 	void QueueThreadDataForDrawingThread(void);
 	void QueueDrawing(CamData const & camData, int width, int height);
+#endif
 
 	void SupplyCamData(CamData const & camData);
 
@@ -214,6 +218,7 @@ namespace MirvPgl
 
 	bool OnViewOverride(float& Tx, float& Ty, float& Tz, float& Rx, float& Ry, float& Rz, float& Fov);
 
+#ifndef _WIN64 // mirv_pgl x64: drawing feature disabled
 	// On Drawing thead:
 
 	void D3D9_BeginDevice(IDirect3DDevice9 * device);
@@ -221,6 +226,7 @@ namespace MirvPgl
 	void D3D9_Reset();
 
 	void DrawingThread_UnleashData();
+#endif
 }
 
 #endif

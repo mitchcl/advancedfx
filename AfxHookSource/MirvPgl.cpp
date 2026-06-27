@@ -75,6 +75,7 @@ namespace MirvPgl
 
 	// Version: 3.0.3 (2017-10-31T10:37Z)
 	// 
+#ifndef _WIN64 // mirv_pgl x64: drawing feature uses the x86-only render call-queue (CAfxFunctor/QueueOrExecute); not needed for camera/exec control
 	class CDrawing_Functor
 		: public CAfxFunctor
 	{
@@ -882,6 +883,7 @@ namespace MirvPgl
 	};
 
 	MirvPgl::CDrawing_Functor::CStatic MirvPgl::CDrawing_Functor::m_Static;
+#endif //#ifndef _WIN64 -- mirv_pgl x64: end CDrawing_Functor
 
 	CamData::CamData()
 	{
@@ -929,6 +931,7 @@ namespace MirvPgl
 		std::vector<uint8_t> m_Data;
 	};
 
+#ifndef _WIN64 // mirv_pgl x64: drawing-thread supply functor (x86-only call-queue)
 	void DrawingThread_SupplyThreadData(CThreadData * threadData);
 
 	class CSupplyThreadData_Functor
@@ -948,6 +951,7 @@ namespace MirvPgl
 	private:
 		CThreadData * m_Value;
 	};
+#endif //#ifndef _WIN64
 
 
 	class CThreadDataPool
@@ -1074,7 +1078,9 @@ namespace MirvPgl
 
 	DWORD m_LastCheckRestoreTick = 0;
 
+#ifndef _WIN64 // mirv_pgl x64: drawing-thread state
 	CThreadData * m_DrawingThread_ThreadData = 0;
+#endif
 
 	std::string m_CurrentLevel;
 
@@ -1422,10 +1428,12 @@ namespace MirvPgl
 		return m_DataActive;
 	}
 
+#ifndef _WIN64 // mirv_pgl x64: drawing feature disabled
 	bool IsDrawingActive()
 	{
 		return CDrawing_Functor::Active_get();
 	}
+#endif
 
 	void CheckStartedAndRestoreIfDown()
 	{
@@ -1452,6 +1460,7 @@ namespace MirvPgl
 		}
 	}
 
+#ifndef _WIN64 // mirv_pgl x64: drawing queue ops need the x86-only render call-queue
 	void QueueThreadDataForDrawingThread(void)
 	{
 		if(m_DataActive || !m_ThreadDataPool.EngineThread_AccessData().empty())
@@ -1462,6 +1471,7 @@ namespace MirvPgl
 	{
 		QueueOrExecute(GetCurrentContext()->GetOrg(), new CAfxLeafExecute_Functor(new CDrawing_Functor(camData, width, height)));
 	}
+#endif //#ifndef _WIN64
 
 	void SupplyCamData(CamData const & camData)
 	{
@@ -1510,6 +1520,7 @@ namespace MirvPgl
 		}
 	}
 
+#ifndef _WIN64 // mirv_pgl x64: drawing-thread + D3D9 device methods disabled
 	void DrawingThread_SupplyThreadData(CThreadData * threadData)
 	{
 		m_DrawingThread_ThreadData = threadData;
@@ -1538,6 +1549,7 @@ namespace MirvPgl
 			m_DrawingThread_ThreadData = 0;
 		}
 	}
+#endif //#ifndef _WIN64 -- mirv_pgl x64: end drawing-thread/D3D9 methods
 
 	class CMirvPglGameEventSerializer : public CAfxGameEventListenerSerialzer
 	{
@@ -1655,6 +1667,7 @@ CON_COMMAND(mirv_pgl, "PGL")
 			);
 			return;
 		}
+#ifndef _WIN64 // mirv_pgl x64: `mirv_pgl draw` subcommand disabled (drawing feature off)
 		else if (0 == _stricmp("draw", cmd1))
 		{
 			CSubWrpCommandArgs subArgs(args, 2);
@@ -1663,6 +1676,7 @@ CON_COMMAND(mirv_pgl, "PGL")
 
 			return;
 		}
+#endif
 		else if (0 == _stricmp(cmd1, "events"))
 		{
 			if (3 <= argc)
