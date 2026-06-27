@@ -160,6 +160,7 @@ void CAfxGameEventListenerSerialzer::FireHandledEvent(SOURCESDK::CSGO::CGameEven
 						break;
 					}
 
+#ifndef _WIN64 // mirv_pgl x64: gameEvent enrichment uses CS:GO entity list / client tools (Win32-only); event stream unused on x64
 					auto it1 = m_Enrichments.find(eventName);
 					if (it1 != m_Enrichments.end())
 					{
@@ -305,6 +306,7 @@ void CAfxGameEventListenerSerialzer::FireHandledEvent(SOURCESDK::CSGO::CGameEven
 							}
 						}
 					}
+#endif //#ifndef _WIN64 -- mirv_pgl x64: end gameEvent enrichment
 
 					key = key->GetNextKey();
 				}
