@@ -1520,6 +1520,21 @@ namespace MirvPgl
 		}
 	}
 
+#ifdef _WIN64
+	// mirv_pgl x64: the normal engine->send-thread handoff (QueueThreadDataForDrawingThread
+	// + DrawingThread_UnleashData) rides the x86-only render call-queue / d3d9 path that is
+	// fenced out on x64, so outgoing data (hello, cam, levelInit) never reached the send
+	// thread. Flush the engine buffer straight to the send thread from the frame pump.
+	void X64_PumpSend()
+	{
+		if (!m_ThreadDataPool.EngineThread_AccessData().empty())
+		{
+			CThreadData * td = m_ThreadDataPool.EngineThread_Commit();
+			m_ThreadDataPool.DrawingThread_Commit(td);
+		}
+	}
+#endif
+
 #ifndef _WIN64 // mirv_pgl x64: drawing-thread + D3D9 device methods disabled
 	void DrawingThread_SupplyThreadData(CThreadData * threadData)
 	{

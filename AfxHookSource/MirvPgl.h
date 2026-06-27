@@ -206,6 +206,9 @@ namespace MirvPgl
 
 	void CheckStartedAndRestoreIfDown();
 	void ExecuteQueuedCommands();
+#ifdef _WIN64
+	void X64_PumpSend(); // x64: flush outgoing data (hello/cam/level) to the send thread
+#endif
 #ifndef _WIN64 // mirv_pgl x64: drawing feature disabled
 	void QueueThreadDataForDrawingThread(void);
 	void QueueDrawing(CamData const & camData, int width, int height);

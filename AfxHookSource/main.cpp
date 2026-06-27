@@ -349,6 +349,19 @@ public:
 			fov
 		);
 
+#if defined(AFX_MIRV_PGL) && defined(_WIN64)
+		// mirv_pgl x64: feed the inbound `cam` telemetry from here — the x86-only
+		// AfxStreams::View_Render cam-supply is fenced on x64, but origin/angles/fov
+		// are the final camera right here. Convention matches GetMirvPglCamData:
+		// XRot=roll(angles.z), YRot=pitch(angles.x), ZRot=yaw(angles.y).
+		if (MirvPgl::IsDataActive())
+			MirvPgl::SupplyCamData(MirvPgl::CamData(
+				(float)g_MirvTime.GetTime(),
+				origin.x, origin.y, origin.z,
+				angles.z, angles.x, angles.y,
+				fov));
+#endif
+
 		if (CClientTools::Instance()) CClientTools::Instance()->OnAfterSetupEngineView();
 
 		return bRet;
@@ -929,6 +942,7 @@ void __fastcall new_CVClient_FrameStageNotify_TF2(void* This,
 			if (!s_mirvPglInitX64) { MirvPgl::Init(); s_mirvPglInitX64 = true; }
 			MirvPgl::CheckStartedAndRestoreIfDown();
 			MirvPgl::ExecuteQueuedCommands();
+			MirvPgl::X64_PumpSend(); // flush hello/cam/level out to the websocket
 		}
 #endif
 		Shared_BeforeFrameRenderStart();
